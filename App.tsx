@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { GameBoard } from './components/GameBoard';
 import { Leaderboard } from './components/Leaderboard';
 import { DifficultyLevel } from './types/game';
-import { supabase } from './lib/supabase';
 import { Trophy, Play, RotateCcw } from 'lucide-react';
 
 function App() {
@@ -32,24 +31,26 @@ function App() {
     setGameStarted(false);
   };
 
-  const saveScore = async () => {
+  // ✅ LOCAL STORAGE SAVE (NO SUPABASE)
+  const saveScore = () => {
     if (!playerName.trim()) return;
 
-    const { error } = await supabase.from('leaderboard').insert([
-      {
-        player_name: playerName,
-        score: gameStats.score,
-        moves: gameStats.moves,
-        time: gameStats.time,
-        difficulty: difficulty,
-      },
-    ]);
+    const newEntry = {
+      id: Date.now(),
+      player_name: playerName,
+      score: gameStats.score,
+      moves: gameStats.moves,
+      time: gameStats.time,
+      difficulty: difficulty,
+    };
 
-    if (!error) {
-      setPlayerName('');
-      setShowModal(false);
-      setLeaderboardRefresh((prev) => prev + 1);
-    }
+    const existing = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+    existing.push(newEntry);
+    localStorage.setItem('leaderboard', JSON.stringify(existing));
+
+    setPlayerName('');
+    setShowModal(false);
+    setLeaderboardRefresh((prev) => prev + 1);
   };
 
   const formatTime = (seconds: number) => {
@@ -76,23 +77,20 @@ function App() {
             <div className="card shadow-sm">
               <div className="card-body">
                 <h5 className="card-title text-center mb-3">Select Difficulty</h5>
-                <div className="btn-group w-100" role="group">
+                <div className="btn-group w-100">
                   <button
-                    type="button"
                     className={`btn ${difficulty === 'easy' ? 'btn-success' : 'btn-outline-success'}`}
                     onClick={() => handleDifficultyChange('easy')}
                   >
                     Easy (6 pairs)
                   </button>
                   <button
-                    type="button"
                     className={`btn ${difficulty === 'medium' ? 'btn-warning' : 'btn-outline-warning'}`}
                     onClick={() => handleDifficultyChange('medium')}
                   >
                     Medium (10 pairs)
                   </button>
                   <button
-                    type="button"
                     className={`btn ${difficulty === 'hard' ? 'btn-danger' : 'btn-outline-danger'}`}
                     onClick={() => handleDifficultyChange('hard')}
                   >
@@ -111,27 +109,20 @@ function App() {
                 {!gameStarted ? (
                   <div className="text-center py-5">
                     <Play size={64} className="text-primary mb-3" />
-                    <h3 className="mb-3">Ready to Play?</h3>
+                    <h3>Ready to Play?</h3>
                     <p className="text-muted mb-4">
-                      Click the button below to start your game!
+                      Click below to start!
                     </p>
-                    <button
-                      className="btn btn-primary btn-lg"
-                      onClick={startNewGame}
-                    >
+                    <button className="btn btn-primary btn-lg" onClick={startNewGame}>
                       Start Game
                     </button>
                   </div>
                 ) : (
                   <>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <h5 className="card-title mb-0">Game Board</h5>
-                      <button
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={startNewGame}
-                      >
-                        <RotateCcw size={16} className="me-1" />
-                        Reset
+                    <div className="d-flex justify-content-between mb-3">
+                      <h5>Game Board</h5>
+                      <button className="btn btn-sm btn-outline-secondary" onClick={startNewGame}>
+                        <RotateCcw size={16} /> Reset
                       </button>
                     </div>
                     <GameBoard
@@ -161,70 +152,32 @@ function App() {
             <div className="modal-content">
               <div className="modal-header bg-success text-white">
                 <h5 className="modal-title">Congratulations!</h5>
-                <button
-                  type="button"
-                  className="btn-close btn-close-white"
-                  onClick={() => setShowModal(false)}
-                ></button>
+                <button className="btn-close btn-close-white" onClick={() => setShowModal(false)}></button>
               </div>
+
               <div className="modal-body text-center">
                 <Trophy size={64} className="text-warning mb-3" />
-                <h4 className="mb-4">You Won!</h4>
-                <div className="row g-3 mb-4">
-                  <div className="col-4">
-                    <div className="p-3 bg-light rounded">
-                      <div className="text-muted small">Score</div>
-                      <div className="h4 mb-0 fw-bold text-success">{gameStats.score}</div>
-                    </div>
-                  </div>
-                  <div className="col-4">
-                    <div className="p-3 bg-light rounded">
-                      <div className="text-muted small">Moves</div>
-                      <div className="h4 mb-0 fw-bold">{gameStats.moves}</div>
-                    </div>
-                  </div>
-                  <div className="col-4">
-                    <div className="p-3 bg-light rounded">
-                      <div className="text-muted small">Time</div>
-                      <div className="h4 mb-0 fw-bold">{formatTime(gameStats.time)}</div>
-                    </div>
-                  </div>
+                <h4>You Won!</h4>
+
+                <div className="row g-3 my-3">
+                  <div className="col-4"><b>Score:</b> {gameStats.score}</div>
+                  <div className="col-4"><b>Moves:</b> {gameStats.moves}</div>
+                  <div className="col-4"><b>Time:</b> {formatTime(gameStats.time)}</div>
                 </div>
-                <div className="mb-3">
-                  <label className="form-label">Save your score to the leaderboard:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Enter your name"
-                    value={playerName}
-                    onChange={(e) => setPlayerName(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && saveScore()}
-                  />
-                </div>
+
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Enter your name"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                />
               </div>
+
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowModal(false)}
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-success"
-                  onClick={saveScore}
-                  disabled={!playerName.trim()}
-                >
-                  Save Score
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={startNewGame}
-                >
-                  Play Again
-                </button>
+                <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Close</button>
+                <button className="btn btn-success" onClick={saveScore}>Save Score</button>
+                <button className="btn btn-primary" onClick={startNewGame}>Play Again</button>
               </div>
             </div>
           </div>
