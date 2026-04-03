@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-// import { supabase } from '../lib/supabase';
 import { DifficultyLevel } from '../types/game';
 
 interface LeaderboardEntry {
@@ -26,20 +25,32 @@ export const Leaderboard = ({ difficulty, refresh }: LeaderboardProps) => {
   }, [difficulty, refresh]);
 
   const fetchLeaderboard = async () => {
-    setLoading(true);
-    const { data, error } = await 
-      .from('leaderboard')
-      .select('*')
-      .eq('difficulty', difficulty)
-      .order('score', { ascending: false })
-      .limit(10);
+  setLoading(true);
 
-    if (!error && data) {
-      setEntries(data);
+  const dummyData = [
+    {
+      id: 1,
+      player_name: "Thenmozhi",
+      score: 120,
+      moves: 18,
+      time: 55,
+      difficulty: difficulty,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      player_name: "Player2",
+      score: 100,
+      moves: 22,
+      time: 70,
+      difficulty: difficulty,
+      created_at: new Date().toISOString()
     }
-    setLoading(false);
-  };
+  ];
 
+  setEntries(dummyData);
+  setLoading(false);
+};
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
