@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/',   // 👈 FIXED
+  base: '/', // ✅ correct for Vercel
   server: {
     host: true
   },
