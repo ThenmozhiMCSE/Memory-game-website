@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
 import { DifficultyLevel } from '../types/game';
 
 interface LeaderboardEntry {
@@ -9,7 +8,6 @@ interface LeaderboardEntry {
   moves: number;
   time: number;
   difficulty: DifficultyLevel;
-  created_at: string;
 }
 
 interface LeaderboardProps {
@@ -25,18 +23,18 @@ export const Leaderboard = ({ difficulty, refresh }: LeaderboardProps) => {
     fetchLeaderboard();
   }, [difficulty, refresh]);
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('leaderboard')
-      .select('*')
-      .eq('difficulty', difficulty)
-      .order('score', { ascending: false })
-      .limit(10);
 
-    if (!error && data) {
-      setEntries(data);
-    }
+    // ✅ Get from localStorage instead of supabase
+    const data = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+
+    const filtered = data
+      .filter((item: LeaderboardEntry) => item.difficulty === difficulty)
+      .sort((a: LeaderboardEntry, b: LeaderboardEntry) => b.score - a.score)
+      .slice(0, 10);
+
+    setEntries(filtered);
     setLoading(false);
   };
 
@@ -51,12 +49,9 @@ export const Leaderboard = ({ difficulty, refresh }: LeaderboardProps) => {
       <h3 className="text-center mb-3">
         Leaderboard - {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
       </h3>
+
       {loading ? (
-        <div className="text-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
+        <p className="text-center">Loading...</p>
       ) : entries.length === 0 ? (
         <p className="text-center text-muted">No scores yet. Be the first!</p>
       ) : (
@@ -74,9 +69,9 @@ export const Leaderboard = ({ difficulty, refresh }: LeaderboardProps) => {
             <tbody>
               {entries.map((entry, index) => (
                 <tr key={entry.id}>
-                  <td className="fw-bold">{index + 1}</td>
+                  <td>{index + 1}</td>
                   <td>{entry.player_name}</td>
-                  <td className="text-success fw-bold">{entry.score}</td>
+                  <td className="text-success">{entry.score}</td>
                   <td>{entry.moves}</td>
                   <td>{formatTime(entry.time)}</td>
                 </tr>
