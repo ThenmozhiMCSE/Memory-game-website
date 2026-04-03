@@ -25,32 +25,43 @@ export const Leaderboard = ({ difficulty, refresh }: LeaderboardProps) => {
   }, [difficulty, refresh]);
 
   const fetchLeaderboard = async () => {
-  setLoading(true);
+    setLoading(true);
 
-  const dummyData = [
-    {
-      id: 1,
-      player_name: "Thenmozhi",
-      score: 120,
-      moves: 18,
-      time: 55,
-      difficulty: difficulty,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 2,
-      player_name: "Player2",
-      score: 100,
-      moves: 22,
-      time: 70,
-      difficulty: difficulty,
-      created_at: new Date().toISOString()
-    }
-  ];
+    // ✅ Dummy data (NO SUPABASE)
+    const dummyData: LeaderboardEntry[] = [
+      {
+        id: 1,
+        player_name: "Thenmozhi",
+        score: 120,
+        moves: 18,
+        time: 55,
+        difficulty: difficulty,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 2,
+        player_name: "Player2",
+        score: 100,
+        moves: 22,
+        time: 70,
+        difficulty: difficulty,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: 3,
+        player_name: "Player3",
+        score: 90,
+        moves: 25,
+        time: 80,
+        difficulty: difficulty,
+        created_at: new Date().toISOString()
+      }
+    ];
 
-  setEntries(dummyData);
-  setLoading(false);
-};
+    setEntries(dummyData);
+    setLoading(false);
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -62,6 +73,7 @@ export const Leaderboard = ({ difficulty, refresh }: LeaderboardProps) => {
       <h3 className="text-center mb-3">
         Leaderboard - {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
       </h3>
+
       {loading ? (
         <div className="text-center">
           <div className="spinner-border text-primary" role="status">
