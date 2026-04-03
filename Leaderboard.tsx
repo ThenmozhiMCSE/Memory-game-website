@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+// import { supabase } from '../lib/supabase';
 import { DifficultyLevel } from '../types/game';
 
 interface LeaderboardEntry {
@@ -27,7 +27,7 @@ export const Leaderboard = ({ difficulty, refresh }: LeaderboardProps) => {
 
   const fetchLeaderboard = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await 
       .from('leaderboard')
       .select('*')
       .eq('difficulty', difficulty)
