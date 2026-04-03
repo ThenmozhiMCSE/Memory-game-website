@@ -3,8 +3,11 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/Memory-game-website/',
+  base: '/Memory-game-website/',  // 👈 keep this
   server: {
-    host: true   // 👈 ADD THIS LINE
-  }
+    host: true
+  },
+  optimizeDeps: {
+    exclude: ['lucide-react'],
+  },
 });
