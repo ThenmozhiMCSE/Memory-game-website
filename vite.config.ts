@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/Memory-game-website/',  // 👈 keep this
+  base: '/',   // 👈 FIXED
   server: {
     host: true
   },
